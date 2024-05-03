@@ -2,12 +2,10 @@ namespace MacroTaskEstimation.Model.Interface;
 
 public interface IResourceType
 {
-    public int Capacity => Resources.Count();
+    public IEnumerable<Resource> Resources { get; }
 
-    public IEnumerable<IResource> Resources { get; init; }
-
-    public interface IResource
+    public class Resource(IEnumerable<(int From, int To)> calendars)
     {
-        public IEnumerable<(int From, int To)> Calendars { get; init; }
+        public IEnumerable<(int From, int To)> Calendars { get; } = calendars;
     }
 }

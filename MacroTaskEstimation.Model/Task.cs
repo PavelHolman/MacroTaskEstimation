@@ -2,15 +2,9 @@
 
 using MacroTaskEstimation.Model.Interface;
 
-public class Task(int duration, DateTime dueDate, ISet<IResourceType> resourceTypes)
+public class Task(DateTime dueDate, IEnumerable<IResourceType> resourceTypes)
 {
-    private static int _idCounter = 0;
-
-    public int Id { get; } = _idCounter++;
-
-    public int Duration { get; } = duration;
-
     public DateTime DueDate { get; } = dueDate;
 
-    public ISet<IResourceType> ResourceTypes { get; } = resourceTypes;
+    public IEnumerable<IResourceType> ResourceTypes { get; } = resourceTypes;
 }
