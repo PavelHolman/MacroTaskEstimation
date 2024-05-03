@@ -23,7 +23,7 @@ public class KMeansEstimator(int? seed = null)
     {
         var data = _mlContext.Data.LoadFromEnumerable(tasks.Select(task => new DataPoint(task)));
 
-        var pipeline = _mlContext.Clustering.Trainers.KMeans(featureColumnName: "Features", numberOfClusters: 2);
+        var pipeline = _mlContext.Clustering.Trainers.KMeans(numberOfClusters: 2);
 
         var model = pipeline.Fit(data);
         var transformedData = model.Transform(data);
