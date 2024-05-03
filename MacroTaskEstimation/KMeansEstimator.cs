@@ -8,36 +8,32 @@ public class KMeansEstimator(int? seed = null)
 {
     private readonly MLContext _mlContext = new(seed);
 
-    public IEnumerable<List<Task>> EstimateMacroTasks(IEnumerable<Task> tasks)
+    public IEnumerable<IEnumerable<Task>> EstimateMacroTasks(IEnumerable<Task> tasks)
     {
         return tasks
             .SelectMany(task => task.ResourceTypes,
                 (task, rt) => (Task: task, ResourceType: rt))
             .GroupBy(p => p.ResourceType, p => p.Task)
             .Select(Enumerable.ToList)
-            .SelectMany(this.Estimate)
-            .ToList();
+            .SelectMany(this.Estimate);
     }
 
-    private List<List<Task>> Estimate(IList<Task> tasks)
+    private IEnumerable<IEnumerable<Task>> Estimate(ICollection<Task> tasks)
     {
-        var data = _mlContext.Data.LoadFromEnumerable(tasks.Select(task => new DataPoint(task)));
+        var data = _mlContext.Data.LoadFromEnumerable(tasks.Select(DataPoint.FromTask));
 
-        var pipeline = _mlContext.Clustering.Trainers.KMeans(numberOfClusters: 2);
-
-        var model = pipeline.Fit(data);
-        var transformedData = model.Transform(data);
-
-        var cluster = transformedData.GetColumn<uint>("PredictedLabel");
-
-        return cluster.Zip(tasks, (label, task) => (Label: label, Task: task))
-            .GroupBy(z => z.Label, z => z.Task)
-            .Select(Enumerable.ToList)
-            .ToList();
+        return _mlContext.Clustering.Trainers.KMeans(numberOfClusters: 2)
+            .Fit(data)
+            .Transform(data)
+            .GetColumn<uint>("PredictedLabel")
+            .Zip(tasks, (label, task) => (Label: label, Task: task))
+            .GroupBy(z => z.Label, z => z.Task);
     }
 
     private sealed class DataPoint(Task task)
     {
         [VectorType(1)] public float[] Features { get; } = [task.DueDate.Ticks];
+
+        public static DataPoint FromTask(Task task) => new(task);
     }
 }
