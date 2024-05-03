@@ -1,0 +1,27 @@
+# ------- Binary --------
+
+bin/
+obj/
+
+# ------- Other ---------
+
+*.suo
+
+*.Cache
+
+*.csproj.user
+
+*.vs/
+
+# ------- MacOS generated files ---------
+
+*.DS_Store
+
+# ------- Gitlab runner temp directory ---------
+
+builds/
+
+# ------- Test result files -------
+
+*.Tests/TestResults
+
