@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MacroTaskEstimation", "MacroTaskEstimation\MacroTaskEstimation.csproj", "{6AC5CCED-72FA-4214-8F1F-8EFE2711D43A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MacroTaskEstimation.Model", "MacroTaskEstimation.Model\MacroTaskEstimation.Model.csproj", "{C5341B22-9CC5-4D5F-B60C-694ACF78044A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MacroTaskEstimation.Tests", "MacroTaskEstimation.Tests\MacroTaskEstimation.Tests.csproj", "{DF16A387-8DBB-4747-94C0-96D35F564865}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6AC5CCED-72FA-4214-8F1F-8EFE2711D43A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6AC5CCED-72FA-4214-8F1F-8EFE2711D43A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6AC5CCED-72FA-4214-8F1F-8EFE2711D43A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6AC5CCED-72FA-4214-8F1F-8EFE2711D43A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C5341B22-9CC5-4D5F-B60C-694ACF78044A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5341B22-9CC5-4D5F-B60C-694ACF78044A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5341B22-9CC5-4D5F-B60C-694ACF78044A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5341B22-9CC5-4D5F-B60C-694ACF78044A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF16A387-8DBB-4747-94C0-96D35F564865}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF16A387-8DBB-4747-94C0-96D35F564865}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF16A387-8DBB-4747-94C0-96D35F564865}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF16A387-8DBB-4747-94C0-96D35F564865}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
