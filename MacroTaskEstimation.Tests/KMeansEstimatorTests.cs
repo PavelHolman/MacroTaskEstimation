@@ -13,14 +13,15 @@ public class KMeansEstimatorTests
         var dueDateEarly = DateTime.Today;
         var dueDateLater = dueDateEarly.AddYears(3);
 
-        var rt = new ResourceType([]);
+        var resource = new IResourceType.Resource([(1, 2), (3, 4)]);
+        var resourceType = new ResourceType([resource]);
 
-        var task1 = new Task(1, dueDateEarly, new HashSet<IResourceType>([rt]));
-        var task2 = new Task(1, dueDateEarly, new HashSet<IResourceType>([rt]));
-        var task3 = new Task(1, dueDateEarly, new HashSet<IResourceType>([rt]));
+        var task1 = new Task(dueDateEarly, new HashSet<IResourceType>([resourceType]));
+        var task2 = new Task(dueDateEarly, new HashSet<IResourceType>([resourceType]));
+        var task3 = new Task(dueDateEarly, new HashSet<IResourceType>([resourceType]));
 
-        var task4 = new Task(1, dueDateLater, new HashSet<IResourceType>([rt]));
-        var task5 = new Task(1, dueDateLater, new HashSet<IResourceType>([rt]));
+        var task4 = new Task(dueDateLater, new HashSet<IResourceType>([resourceType]));
+        var task5 = new Task(dueDateLater, new HashSet<IResourceType>([resourceType]));
 
         var macroTasks = estimator.EstimateMacroTasks([task1, task2, task3, task4, task5]);
 
