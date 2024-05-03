@@ -11,7 +11,7 @@ public class KMeansEstimatorTests
         var estimator = new KMeansEstimator(seed: 42);
 
         var dueDateEarly = DateTime.Today;
-        var dueDateLater = dueDateEarly.AddDays(3);
+        var dueDateLater = dueDateEarly.AddYears(3);
 
         var rt = new ResourceType([]);
 
