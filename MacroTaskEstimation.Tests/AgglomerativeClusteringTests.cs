@@ -1,0 +1,43 @@
+namespace MacroTaskEstimation.Tests;
+
+using MacroTaskEstimation.Model;
+using MacroTaskEstimation.Model.Interface;
+
+public class AgglomerativeClusteringTests
+{
+    [Test]
+    public void TwoClustersTest()
+    {
+        var dueDateEarly = DateTime.Today;
+        var dueDateLater = dueDateEarly.AddYears(3);
+
+        var oneHour = TimeSpan.FromHours(1);
+
+        var resourceType = new ResourceType([new IResourceType.Resource([(1, 2), (3, 4)])]);
+
+        var task1 = new Task(1, oneHour, dueDateEarly, new HashSet<IResourceType>([resourceType]));
+        var task2 = new Task(2, oneHour, dueDateEarly, new HashSet<IResourceType>([resourceType]));
+        var task3 = new Task(3, oneHour, dueDateEarly, new HashSet<IResourceType>([resourceType]));
+
+        var task4 = new Task(4, oneHour, dueDateLater, new HashSet<IResourceType>([resourceType]));
+        var task5 = new Task(5, oneHour, dueDateLater, new HashSet<IResourceType>([resourceType]));
+
+
+        var estimator = new AgglomerativeClusteringEstimator(TimeSpan.FromHours(3));
+        var macroTasks = estimator.EstimateMacroTasks([task1, task2, task3, task4, task5]);
+
+        var expectedMacroTasks = new List<List<Task>>
+        {
+            new List<Task> { task1, task2, task3 },
+            new List<Task> { task4, task5 }
+        };
+
+        Console.WriteLine(
+            string.Join(", ", macroTasks.Select(macroTask => $"[{string.Join(", ", macroTask.Select(t => t.Id))}]")));
+
+        Assert.That(macroTasks.Select(l => l.Select(t => t.Id).Order().ToList()),
+            Is.EquivalentTo(expectedMacroTasks.Select(l => l.Select(t => t.Id).Order().ToList()))
+                .Using<List<Task>>((expected, actual) =>
+                    expected.Count == actual.Count && !expected.Except(actual).Any()));
+    }
+}
