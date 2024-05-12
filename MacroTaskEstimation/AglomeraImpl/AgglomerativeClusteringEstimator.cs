@@ -31,7 +31,8 @@ public class AgglomerativeClusteringEstimator(TimeSpan maxDuration)
         var clustering = algorithm.GetClustering(dataPoints);
 
         return clustering
-            .Last(cluster => !double.IsNaN(cluster.Dissimilarity))
+            .TakeWhile(cluster => !double.IsNaN(cluster.Dissimilarity))
+            .Last()
             .Select(cluster => cluster.Select(d => d.Task).ToList())
             .ToList();
 

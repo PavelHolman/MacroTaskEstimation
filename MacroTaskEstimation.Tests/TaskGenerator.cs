@@ -5,15 +5,19 @@ using MacroTaskEstimation.Model.Interface;
 
 public static class TaskGenerator
 {
+    private static Random rng;
+    
     public static List<Task> GenerateTasks(
-        int taskCount, int resourceTypeCount, int maxResourceCount, int maxResourcesOnTask, int maxTaskDuration)
+        int taskCount, int resourceTypeCount, int maxResourceCount, int maxResourceTypesOnTask, int maxTaskDuration,
+        int seed = 0)
     {
+        rng = new Random(seed);
         var resourceTypes = GenerateResourceTypes(resourceTypeCount, maxResourceCount);
-        return GenerateTasks(taskCount, resourceTypes, maxResourcesOnTask, maxTaskDuration);
+        return GenerateTasks(taskCount, resourceTypes, maxResourceTypesOnTask, maxTaskDuration);
     }
 
     private static List<Task> GenerateTasks(
-        int taskCount, IList<ResourceType> resourceTypes, int maxResourceCount, int maxTaskDuration)
+        int taskCount, IList<ResourceType> resourceTypes, int maxResourceTypesOnTask, int maxTaskDuration)
     {
         var startDate = DateTime.Today;
         var endDate = startDate.AddYears(1);
@@ -22,9 +26,9 @@ public static class TaskGenerator
         return Enumerable.Range(0, taskCount)
             .Select(id => new Task(
                 id,
-                TimeSpan.FromHours(Random.Shared.Next(1, maxTaskDuration)),
-                startDate + TimeSpan.FromDays(Random.Shared.NextInt64(0, (int)range.TotalDays)),
-                resourceTypes.TakeRandom(Random.Shared.Next(1, maxResourceCount))))
+                TimeSpan.FromHours(rng.Next(1, maxTaskDuration)),
+                startDate + TimeSpan.FromDays(rng.NextInt64(0, (int)range.TotalDays)),
+                resourceTypes.TakeRandom(rng.Next(1, maxResourceTypesOnTask))))
             .ToList();
     }
 
@@ -37,7 +41,7 @@ public static class TaskGenerator
 
         while (indices.Count < count)
         {
-            indices.Add(Random.Shared.Next(source.Count));
+            indices.Add(rng.Next(source.Count));
         }
 
         foreach (var index in indices)
@@ -49,7 +53,7 @@ public static class TaskGenerator
     private static IList<ResourceType> GenerateResourceTypes(int resourceTypeCount, int maxResourceCount)
     {
         return Enumerable.Range(0, resourceTypeCount)
-            .Select(_ => new ResourceType(GenerateResources(Random.Shared.Next(1, maxResourceCount))))
+            .Select(id => new ResourceType(id, GenerateResources(rng.Next(1, maxResourceCount))))
             .ToList();
     }
 }

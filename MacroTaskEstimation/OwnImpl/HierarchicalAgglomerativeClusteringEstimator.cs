@@ -30,7 +30,8 @@ using System.Diagnostics.CodeAnalysis;
    3. Return the final clusters C
  */
 
-public class HierarchicalAgglomerativeClustering<Cluster, Dissimilarity>
+public class HierarchicalAgglomerativeClustering<T, Cluster, Dissimilarity>
+    where Cluster : IEnumerable<T>
     where Dissimilarity : IComparable<Dissimilarity>
 {
     public delegate Dissimilarity? Linkage(Cluster a, Cluster b);
@@ -46,7 +47,7 @@ public class HierarchicalAgglomerativeClustering<Cluster, Dissimilarity>
         _merge = merge;
     }
 
-    public List<Cluster> MergeClusters(IEnumerable<Cluster> data)
+    public IEnumerable<Cluster> MergeClusters(IEnumerable<Cluster> data)
     {
         var clusters = new HashSet<Cluster>(data); // TODO: index
         while (GetNearestClusters(clusters, out var a, out var b))
@@ -56,7 +57,7 @@ public class HierarchicalAgglomerativeClustering<Cluster, Dissimilarity>
             clusters.Add(_merge(a, b));
         }
 
-        return clusters.ToList();
+        return clusters;
     }
 
     private bool GetNearestClusters(

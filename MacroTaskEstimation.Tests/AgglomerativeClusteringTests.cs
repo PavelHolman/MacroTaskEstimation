@@ -17,7 +17,7 @@ public class AgglomerativeClusteringTests
 
         var oneHour = TimeSpan.FromHours(1);
 
-        var resourceType = new ResourceType([new IResourceType.Resource([(1, 2), (3, 4)])]);
+        var resourceType = new ResourceType(0, [new IResourceType.Resource([(1, 2), (3, 4)])]);
 
         var task1 = new Task(1, oneHour, dueDateEarly, new HashSet<IResourceType>([resourceType]));
         var task2 = new Task(2, oneHour, dueDateEarly, new HashSet<IResourceType>([resourceType]));
@@ -64,7 +64,7 @@ public class AgglomerativeClusteringTests
 
         var maxSpan = TimeSpan.FromHours(maxTaskDuration);
 
-        var clustering = new HierarchicalAgglomerativeClustering<List<Task>, double>(
+        var clustering = new HierarchicalAgglomerativeClustering<Task, List<Task>, double>(
             (a, b) =>
             {
                 var sum = 0.0;
