@@ -1,7 +1,11 @@
 namespace MacroTaskEstimation.Tests;
 
+using Aglomera;
+using Aglomera.Linkage;
+using MacroTaskEstimation.AglomeraImpl;
 using MacroTaskEstimation.Model;
 using MacroTaskEstimation.Model.Interface;
+using MacroTaskEstimation.OwnImpl;
 
 public class AgglomerativeClusteringTests
 {
@@ -37,6 +41,57 @@ public class AgglomerativeClusteringTests
 
         Assert.That(macroTasks.Select(l => l.Select(t => t.Id).Order().ToList()),
             Is.EquivalentTo(expectedMacroTasks.Select(l => l.Select(t => t.Id).Order().ToList()))
+                .Using<List<Task>>((expected, actual) =>
+                    expected.Count == actual.Count && !expected.Except(actual).Any()));
+    }
+
+    [TestCase(10000, 3000, 10, 1, 10)]
+    [TestCase(10, 3, 3, 3, 10)]
+    [TestCase(250000, 3000, 10, 1, 10)]
+    [TestCase(250000, 10000, 100, 10, 10)]
+    public void GeneratedDataTest(
+        int taskCount, int resourceTypeCount, int maxResourceCount, int maxResourceTypesOnTask, int maxTaskDuration)
+    {
+        var tasks = TaskGenerator.GenerateTasks(
+            taskCount, resourceTypeCount, maxResourceCount, maxResourceTypesOnTask, maxTaskDuration);
+
+        var start = DateTime.Now;
+
+        var macroTasks1 =
+            new AgglomerativeClusteringEstimator(TimeSpan.FromHours(maxTaskDuration)).EstimateMacroTasks(tasks);
+
+        Console.WriteLine(DateTime.Now - start);
+
+        var maxSpan = TimeSpan.FromHours(maxTaskDuration);
+
+        var clustering = new HierarchicalAgglomerativeClustering<List<Task>, double>(
+            (a, b) =>
+            {
+                var sum = 0.0;
+                foreach (var (x, y) in a.SelectMany(x => b.Select(y => (x, y))))
+                {
+                    sum += double.Abs((x.DueDate - y.DueDate).TotalSeconds);
+                }
+
+                return sum > maxSpan.TotalSeconds ? default : sum;
+            },
+            (a, b) => [..a, ..b]);
+
+        start = DateTime.Now;
+
+        var macroTasks2 =
+            tasks
+                .SelectMany(task => task.ResourceTypes,
+                    (task, rt) => (Task: task, ResourceType: rt))
+                .GroupBy(p => p.ResourceType, p => p.Task)
+                .Select(Enumerable.ToList)
+                .SelectMany(tasks => clustering.MergeClusters(tasks.Select(t => new List<Task> { t })))
+                .ToList();
+
+        Console.WriteLine(DateTime.Now - start);
+
+        Assert.That(macroTasks1.Select(l => l.Select(t => t.Id).Order().ToList()),
+            Is.EquivalentTo(macroTasks2.Select(l => l.Select(t => t.Id).Order().ToList()))
                 .Using<List<Task>>((expected, actual) =>
                     expected.Count == actual.Count && !expected.Except(actual).Any()));
     }

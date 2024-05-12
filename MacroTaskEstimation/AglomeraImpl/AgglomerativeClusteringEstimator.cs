@@ -1,4 +1,4 @@
-namespace MacroTaskEstimation;
+namespace MacroTaskEstimation.AglomeraImpl;
 
 using System.Collections.Frozen;
 using Aglomera;
@@ -24,7 +24,7 @@ public class AgglomerativeClusteringEstimator(TimeSpan maxDuration)
 
         var metric = new TaskDissimilarityMetric();
 
-        var linkage = new MacroTaskLinkage(new MinimumEnergyLinkage<DataPoint>(metric), CanMergeClusters);
+        var linkage = new MacroTaskLinkage(new AverageLinkage<DataPoint>(metric), CanMergeClusters);
 
         var algorithm = new AgglomerativeClusteringAlgorithm<DataPoint>(linkage);
 

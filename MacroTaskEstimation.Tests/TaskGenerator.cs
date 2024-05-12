@@ -6,21 +6,23 @@ using MacroTaskEstimation.Model.Interface;
 public static class TaskGenerator
 {
     public static List<Task> GenerateTasks(
-        int taskCount, int resourceTypeCount, int maxResourceCount, int maxResourcesOnTask)
+        int taskCount, int resourceTypeCount, int maxResourceCount, int maxResourcesOnTask, int maxTaskDuration)
     {
         var resourceTypes = GenerateResourceTypes(resourceTypeCount, maxResourceCount);
-        return GenerateTasks(taskCount, resourceTypes, maxResourcesOnTask);
+        return GenerateTasks(taskCount, resourceTypes, maxResourcesOnTask, maxTaskDuration);
     }
 
     private static List<Task> GenerateTasks(
-        int taskCount, IList<ResourceType> resourceTypes, int maxResourceCount)
+        int taskCount, IList<ResourceType> resourceTypes, int maxResourceCount, int maxTaskDuration)
     {
         var startDate = DateTime.Today;
         var endDate = startDate.AddYears(1);
         var range = endDate - startDate;
 
         return Enumerable.Range(0, taskCount)
-            .Select(_ => new Task(
+            .Select(id => new Task(
+                id,
+                TimeSpan.FromHours(Random.Shared.Next(1, maxTaskDuration)),
                 startDate + TimeSpan.FromDays(Random.Shared.NextInt64(0, (int)range.TotalDays)),
                 resourceTypes.TakeRandom(Random.Shared.Next(1, maxResourceCount))))
             .ToList();
