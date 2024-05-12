@@ -53,7 +53,7 @@ public class AgglomerativeClusteringEstimator(TimeSpan maxDuration)
     private sealed class TaskDissimilarityMetric : IDissimilarityMetric<DataPoint>
     {
         public double Calculate(DataPoint instance1, DataPoint instance2) =>
-            double.Abs((instance1.Task.DueDate - instance2.Task.DueDate).TotalSeconds);
+            double.Abs((instance1.Task.DueDate - instance2.Task.DueDate).TotalMinutes);
     }
 
     private sealed class MacroTaskLinkage(

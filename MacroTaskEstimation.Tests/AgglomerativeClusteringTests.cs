@@ -84,18 +84,20 @@ public class AgglomerativeClusteringTests
 
         Console.WriteLine(DateTime.Now - start);
 
-        var maxSpan = TimeSpan.FromHours(maxTaskDuration);
-
         var clustering = new HierarchicalAgglomerativeClustering<Task, List<Task>, double>(
             (a, b) =>
             {
-                var sum = 0.0;
-                foreach (var (x, y) in a.SelectMany(x => b.Select(y => (x, y))))
+                if (a.Concat(b)
+                        .Select(t => t.Duration)
+                        .Aggregate((x, y) => x + y) > TimeSpan.FromHours(maxTaskDuration))
                 {
-                    sum += double.Abs((x.DueDate - y.DueDate).TotalSeconds);
+                    return null;
                 }
 
-                return sum > maxSpan.TotalSeconds ? default : sum;
+                return a
+                    .SelectMany(x => b
+                        .Select(y => double.Abs((x.DueDate - y.DueDate).TotalMinutes)))
+                    .Sum() / (a.Count * b.Count);
             },
             (a, b) => [..a, ..b]);
 
