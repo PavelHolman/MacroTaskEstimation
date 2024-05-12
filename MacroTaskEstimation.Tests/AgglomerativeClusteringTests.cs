@@ -1,7 +1,5 @@
 namespace MacroTaskEstimation.Tests;
 
-using Aglomera;
-using Aglomera.Linkage;
 using MacroTaskEstimation.AglomeraImpl;
 using MacroTaskEstimation.Model;
 using MacroTaskEstimation.Model.Interface;
@@ -15,25 +13,49 @@ public class AgglomerativeClusteringTests
         var dueDateEarly = DateTime.Today;
         var dueDateLater = dueDateEarly.AddYears(3);
 
-        var oneHour = TimeSpan.FromHours(1);
+        var resourceType1 = new ResourceType(0, [new IResourceType.Resource([])]);
+        var resourceType2 = new ResourceType(1, [new IResourceType.Resource([])]);
+        var resourceType3 = new ResourceType(2, [new IResourceType.Resource([])]);
 
-        var resourceType = new ResourceType(0, [new IResourceType.Resource([(1, 2), (3, 4)])]);
+        var task1 = new Task(1, TimeSpan.FromHours(1), dueDateEarly, new HashSet<IResourceType>([resourceType1]));
+        var task2 = new Task(2, TimeSpan.FromHours(1), dueDateEarly, new HashSet<IResourceType>([resourceType1]));
+        var task3 = new Task(3, TimeSpan.FromHours(1), dueDateEarly, new HashSet<IResourceType>([resourceType1]));
 
-        var task1 = new Task(1, oneHour, dueDateEarly, new HashSet<IResourceType>([resourceType]));
-        var task2 = new Task(2, oneHour, dueDateEarly, new HashSet<IResourceType>([resourceType]));
-        var task3 = new Task(3, oneHour, dueDateEarly, new HashSet<IResourceType>([resourceType]));
+        var task4 = new Task(4, TimeSpan.FromHours(1), dueDateLater, new HashSet<IResourceType>([resourceType1]));
+        var task5 = new Task(5, TimeSpan.FromHours(1), dueDateLater, new HashSet<IResourceType>([resourceType1]));
 
-        var task4 = new Task(4, oneHour, dueDateLater, new HashSet<IResourceType>([resourceType]));
-        var task5 = new Task(5, oneHour, dueDateLater, new HashSet<IResourceType>([resourceType]));
+        var task6 = new Task(6, TimeSpan.FromHours(1), dueDateLater, new HashSet<IResourceType>([resourceType2]));
+        var task7 = new Task(7, TimeSpan.FromHours(1), dueDateLater, new HashSet<IResourceType>([resourceType3]));
 
+        var clustering = new HierarchicalAgglomerativeClustering<Task, List<Task>, double>(
+            (a, b) =>
+            {
+                if (a.Concat(b).Select(t => t.Duration).Aggregate((x, y) => x + y) > TimeSpan.FromHours(3))
+                {
+                    return null;
+                }
 
-        var estimator = new AgglomerativeClusteringEstimator(TimeSpan.FromHours(3));
-        var macroTasks = estimator.EstimateMacroTasks([task1, task2, task3, task4, task5]);
+                return a
+                    .SelectMany(x => b
+                        .Select(y => double.Abs((x.DueDate - y.DueDate).TotalMinutes)))
+                    .Sum() / (a.Count * b.Count);
+            },
+            (a, b) => [..a, ..b]);
+
+        var macroTasks = new List<Task>([task1, task2, task3, task4, task5, task6, task7])
+            .SelectMany(task => task.ResourceTypes,
+                (task, rt) => (Task: task, ResourceType: rt))
+            .GroupBy(p => p.ResourceType, p => p.Task)
+            .Select(Enumerable.ToList)
+            .SelectMany(tasks => clustering.MergeClusters(tasks.Select(t => new List<Task> { t })))
+            .ToList();
 
         var expectedMacroTasks = new List<List<Task>>
         {
             new List<Task> { task1, task2, task3 },
-            new List<Task> { task4, task5 }
+            new List<Task> { task4, task5 },
+            new List<Task> { task6 },
+            new List<Task> { task7 }
         };
 
         Console.WriteLine(

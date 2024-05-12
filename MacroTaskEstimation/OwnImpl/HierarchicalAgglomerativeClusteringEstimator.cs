@@ -32,7 +32,7 @@ using System.Diagnostics.CodeAnalysis;
 
 public class HierarchicalAgglomerativeClustering<T, Cluster, Dissimilarity>
     where Cluster : IEnumerable<T>
-    where Dissimilarity : IComparable<Dissimilarity>
+    where Dissimilarity : struct, IComparable<Dissimilarity>
 {
     public delegate Dissimilarity? Linkage(Cluster a, Cluster b);
 
