@@ -6,13 +6,12 @@ using MacroTaskEstimation.Model.Interface;
 public static class TaskGenerator
 {
     private static Random rng;
-    
+
     public static List<Task> GenerateTasks(
-        int taskCount, int resourceTypeCount, int maxResourceCount, int maxResourceTypesOnTask, int maxTaskDuration,
-        int seed = 0)
+        int taskCount, int resourceTypeCount, int maxResourceTypesOnTask, int maxTaskDuration, int seed)
     {
         rng = new Random(seed);
-        var resourceTypes = GenerateResourceTypes(resourceTypeCount, maxResourceCount);
+        var resourceTypes = GenerateResourceTypes(resourceTypeCount);
         return GenerateTasks(taskCount, resourceTypes, maxResourceTypesOnTask, maxTaskDuration);
     }
 
@@ -32,9 +31,6 @@ public static class TaskGenerator
             .ToList();
     }
 
-    private static IEnumerable<IResourceType.Resource> GenerateResources(int count) =>
-        Enumerable.Range(0, count).Select(_ => new IResourceType.Resource([]));
-
     private static IEnumerable<T> TakeRandom<T>(this IList<T> source, int count)
     {
         var indices = new HashSet<int>();
@@ -50,10 +46,10 @@ public static class TaskGenerator
         }
     }
 
-    private static IList<ResourceType> GenerateResourceTypes(int resourceTypeCount, int maxResourceCount)
+    private static IList<ResourceType> GenerateResourceTypes(int resourceTypeCount)
     {
         return Enumerable.Range(0, resourceTypeCount)
-            .Select(id => new ResourceType(id, GenerateResources(rng.Next(1, maxResourceCount))))
+            .Select(id => new ResourceType(id))
             .ToList();
     }
 }

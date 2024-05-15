@@ -12,9 +12,9 @@ public class MacroTaskEstimatorTests
         var dueDateEarly = DateTime.Today;
         var dueDateLater = dueDateEarly.AddYears(3);
 
-        var resourceType1 = new ResourceType(0, [new IResourceType.Resource([])]);
-        var resourceType2 = new ResourceType(1, [new IResourceType.Resource([])]);
-        var resourceType3 = new ResourceType(2, [new IResourceType.Resource([])]);
+        var resourceType1 = new ResourceType(0);
+        var resourceType2 = new ResourceType(1);
+        var resourceType3 = new ResourceType(2);
 
         var task1 = new Task(1, TimeSpan.FromHours(1), dueDateEarly, new HashSet<IResourceType>([resourceType1]));
         var task2 = new Task(2, TimeSpan.FromHours(1), dueDateEarly, new HashSet<IResourceType>([resourceType1]));

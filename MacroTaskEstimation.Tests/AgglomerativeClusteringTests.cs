@@ -13,9 +13,9 @@ public class AgglomerativeClusteringTests
         var dueDateEarly = DateTime.Today;
         var dueDateLater = dueDateEarly.AddYears(3);
 
-        var resourceType1 = new ResourceType(0, [new IResourceType.Resource([])]);
-        var resourceType2 = new ResourceType(1, [new IResourceType.Resource([])]);
-        var resourceType3 = new ResourceType(2, [new IResourceType.Resource([])]);
+        var resourceType1 = new ResourceType(0);
+        var resourceType2 = new ResourceType(1);
+        var resourceType3 = new ResourceType(2);
 
         var task1 = new Task(1, TimeSpan.FromHours(1), dueDateEarly, new HashSet<IResourceType>([resourceType1]));
         var task2 = new Task(2, TimeSpan.FromHours(1), dueDateEarly, new HashSet<IResourceType>([resourceType1]));
@@ -28,6 +28,7 @@ public class AgglomerativeClusteringTests
         var task7 = new Task(7, TimeSpan.FromHours(1), dueDateLater, new HashSet<IResourceType>([resourceType3]));
 
         var clustering = new HierarchicalAgglomerativeClustering<Task, List<Task>, double>(
+            _ => true,
             (a, b) =>
             {
                 if (a.Concat(b).Select(t => t.Duration).Aggregate((x, y) => x + y) > TimeSpan.FromHours(3))
@@ -75,7 +76,7 @@ public class AgglomerativeClusteringTests
         int taskCount, int resourceTypeCount, int maxResourceCount, int maxResourceTypesOnTask, int maxTaskDuration)
     {
         var tasks = TaskGenerator.GenerateTasks(
-            taskCount, resourceTypeCount, maxResourceCount, maxResourceTypesOnTask, maxTaskDuration);
+            taskCount, resourceTypeCount, maxResourceTypesOnTask, maxTaskDuration, seed: 42);
 
         var start = DateTime.Now;
 
@@ -85,6 +86,7 @@ public class AgglomerativeClusteringTests
         Console.WriteLine(DateTime.Now - start);
 
         var clustering = new HierarchicalAgglomerativeClustering<Task, List<Task>, double>(
+            _ => true,
             (a, b) =>
             {
                 if (a.Concat(b)
