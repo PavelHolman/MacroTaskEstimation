@@ -38,28 +38,22 @@ public class HierarchicalAgglomerativeClustering<T, Cluster, Dissimilarity>
 
     private bool GetNearestClusters(
         IReadOnlyCollection<Cluster> clusters,
-        [NotNullWhen(true)] out Cluster? a,
-        [NotNullWhen(true)] out Cluster? b)
+        [NotNullWhen(true)] out Cluster? x,
+        [NotNullWhen(true)] out Cluster? y)
     {
-        var clusterDissimilarities = clusters
-            .SelectMany((_, i) => clusters.Take(i), (a, b) => (A: a, B: b))
-            .Select(mergedClusters => (
-                Clusters: mergedClusters,
-                Dissimilarity: _linkage(mergedClusters.A, mergedClusters.B)))
-            .Where(x => x.Dissimilarity != null)
-            .ToList();
+        Dissimilarity? minDissimilarity = null;
+        x = y = default;
 
-        if (clusterDissimilarities.Count == 0)
+        foreach (var (a, b) in clusters
+                     .SelectMany((_, i) => clusters.Take(i), (a, b) => (a, b)))
         {
-            a = default;
-            b = default;
-            return false;
+            var dissimilarity = _linkage(a, b);
+            if (dissimilarity == null ||
+                (minDissimilarity.HasValue && dissimilarity.Value.CompareTo(minDissimilarity.Value) >= 0)) continue;
+
+            (minDissimilarity, x, y) = (dissimilarity, a, b);
         }
 
-        (a, b) = clusterDissimilarities
-            .MinBy(x => x.Dissimilarity)
-            .Clusters;
-
-        return true;
+        return minDissimilarity.HasValue;
     }
 }
