@@ -7,18 +7,17 @@ using MacroTaskEstimation.Model;
 
 public class AgglomerativeClusteringEstimator(TimeSpan maxDuration)
 {
-    public List<List<Task>> EstimateMacroTasks(IEnumerable<Task> tasks)
+    public IEnumerable<List<Task>> EstimateMacroTasks(IEnumerable<Task> tasks)
     {
         return tasks
             .SelectMany(task => task.ResourceTypes,
                 (task, rt) => (Task: task, ResourceType: rt))
             .GroupBy(p => p.ResourceType, p => p.Task)
             .Select(Enumerable.ToList)
-            .SelectMany(this.Estimate)
-            .ToList();
+            .SelectMany(this.Estimate);
     }
 
-    private List<List<Task>> Estimate(ICollection<Task> tasks)
+    private IEnumerable<List<Task>> Estimate(ICollection<Task> tasks)
     {
         var dataPoints = tasks.Select(task => new DataPoint(task)).ToFrozenSet();
 
@@ -33,8 +32,7 @@ public class AgglomerativeClusteringEstimator(TimeSpan maxDuration)
         return clustering
             .TakeWhile(cluster => !double.IsNaN(cluster.Dissimilarity))
             .Last()
-            .Select(cluster => cluster.Select(d => d.Task).ToList())
-            .ToList();
+            .Select(cluster => cluster.Select(d => d.Task).ToList());
 
         bool CanMergeClusters(Cluster<DataPoint> cluster1, Cluster<DataPoint> cluster2) =>
             cluster1
