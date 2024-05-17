@@ -62,6 +62,7 @@ public class MacroTaskEstimator
             .SelectMany(task => task.ResourceTypes,
                 (task, rt) => (Task: task, ResourceType: rt))
             .GroupBy(p => p.ResourceType, p => p.Task)
+            .AsParallel()
             .SelectMany(taskGroup => _clustering.MergeClusters(taskGroup.Select(t => new List<Task> { t })));
     }
 }
