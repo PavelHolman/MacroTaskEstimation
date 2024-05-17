@@ -1,7 +1,5 @@
 namespace MacroTaskEstimation.OwnImpl;
 
-using System.Diagnostics.CodeAnalysis;
-
 public class HierarchicalAgglomerativeClustering<T, Cluster, Dissimilarity>
     where Cluster : IEnumerable<T>
     where Dissimilarity : struct, IComparable<Dissimilarity>
@@ -26,42 +24,26 @@ public class HierarchicalAgglomerativeClustering<T, Cluster, Dissimilarity>
     public IEnumerable<Cluster> MergeClusters(IEnumerable<Cluster> data)
     {
         var clusters = new HashSet<Cluster>(data);
-        var dissimilarities = new Dictionary<(Cluster, Cluster), Dissimilarity>();
-        dissimilarities.EnsureCapacity(2 * clusters.Count * clusters.Count);
-        while (_condition(clusters) && GetNearestClusters(clusters, dissimilarities, out var a, out var b))
+
+        var clusterQueue = new PriorityQueue<(Cluster, Cluster), Dissimilarity>(clusters
+            .SelectMany((_, i) => clusters.Take(i), (a, b) => (NearestClusters: (a, b), Dissimilarity: _linkage(a, b)))
+            .Where(t => t.Dissimilarity.HasValue)
+            .Select(t => (t.NearestClusters, t.Dissimilarity!.Value)));
+
+        while (_condition(clusters) && clusterQueue.TryDequeue(out var nearestClusters, out _))
         {
+            var (a, b) = nearestClusters;
+            if (!clusters.Contains(a) || !clusters.Contains(b)) continue;
             clusters.Remove(a);
             clusters.Remove(b);
-            clusters.Add(_merge(a, b));
+            var merged = _merge(a, b);
+            clusterQueue.EnqueueRange(clusters
+                .Select(c => (NearestClusters: (c, merged), Dissimilarity: _linkage(c, merged)))
+                .Where(t => t.Dissimilarity.HasValue)
+                .Select(t => (t.NearestClusters, t.Dissimilarity!.Value)));
+            clusters.Add(merged);
         }
 
         return clusters;
-    }
-
-    private bool GetNearestClusters(
-        IReadOnlyCollection<Cluster> clusters,
-        Dictionary<(Cluster, Cluster), Dissimilarity> dissimilarities,
-        [NotNullWhen(true)] out Cluster? x,
-        [NotNullWhen(true)] out Cluster? y)
-    {
-        Dissimilarity? minDissimilarity = null;
-        x = y = default;
-
-        foreach (var (a, b) in clusters
-                     .SelectMany((_, i) => clusters.Take(i), (a, b) => (a, b)))
-        {
-            if (!dissimilarities.TryGetValue((a, b), out var dissimilarity))
-            {
-                var curDissimilarity = _linkage(a, b);
-                if (!curDissimilarity.HasValue) continue;
-                dissimilarity = curDissimilarity.Value;
-            }
-
-            if (minDissimilarity.HasValue && dissimilarity.CompareTo(minDissimilarity.Value) >= 0) continue;
-
-            (minDissimilarity, x, y) = (dissimilarity, a, b);
-        }
-
-        return minDissimilarity.HasValue;
     }
 }
