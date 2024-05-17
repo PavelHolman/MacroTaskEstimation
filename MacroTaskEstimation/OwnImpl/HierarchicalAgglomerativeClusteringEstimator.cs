@@ -25,8 +25,10 @@ public class HierarchicalAgglomerativeClustering<T, Cluster, Dissimilarity>
 
     public IEnumerable<Cluster> MergeClusters(IEnumerable<Cluster> data)
     {
-        var clusters = new HashSet<Cluster>(data); // TODO: index
-        while (_condition(clusters) && GetNearestClusters(clusters, out var a, out var b))
+        var clusters = new HashSet<Cluster>(data);
+        var dissimilarities = new Dictionary<(Cluster, Cluster), Dissimilarity>();
+        dissimilarities.EnsureCapacity(2 * clusters.Count * clusters.Count);
+        while (_condition(clusters) && GetNearestClusters(clusters, dissimilarities, out var a, out var b))
         {
             clusters.Remove(a);
             clusters.Remove(b);
@@ -38,6 +40,7 @@ public class HierarchicalAgglomerativeClustering<T, Cluster, Dissimilarity>
 
     private bool GetNearestClusters(
         IReadOnlyCollection<Cluster> clusters,
+        Dictionary<(Cluster, Cluster), Dissimilarity> dissimilarities,
         [NotNullWhen(true)] out Cluster? x,
         [NotNullWhen(true)] out Cluster? y)
     {
@@ -47,9 +50,14 @@ public class HierarchicalAgglomerativeClustering<T, Cluster, Dissimilarity>
         foreach (var (a, b) in clusters
                      .SelectMany((_, i) => clusters.Take(i), (a, b) => (a, b)))
         {
-            var dissimilarity = _linkage(a, b);
-            if (dissimilarity == null ||
-                (minDissimilarity.HasValue && dissimilarity.Value.CompareTo(minDissimilarity.Value) >= 0)) continue;
+            if (!dissimilarities.TryGetValue((a, b), out var dissimilarity))
+            {
+                var curDissimilarity = _linkage(a, b);
+                if (!curDissimilarity.HasValue) continue;
+                dissimilarity = curDissimilarity.Value;
+            }
+
+            if (minDissimilarity.HasValue && dissimilarity.CompareTo(minDissimilarity.Value) >= 0) continue;
 
             (minDissimilarity, x, y) = (dissimilarity, a, b);
         }
