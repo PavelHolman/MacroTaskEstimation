@@ -17,5 +17,6 @@
   <ItemGroup>
     <PackageReference Include="Aglomera" Version="1.1.1" />
     <PackageReference Include="Microsoft.ML" Version="3.0.1" />
+    <PackageReference Include="QuikGraph" Version="2.5.0" />
   </ItemGroup>
 </Project>

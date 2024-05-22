@@ -11,29 +11,23 @@ public class MacroTaskEstimatorConfig
 
     private static readonly MacroTaskLinkage DefaultLinkage = AverageLinkage;
 
-    private static readonly MacroTaskMerge DefaultMerge = (a, b) => a.Concat(b).ToList();
-
-    public delegate double MacroTaskLinkage(List<Task> a, List<Task> b);
-
-    public delegate List<Task> MacroTaskMerge(List<Task> a, List<Task> b);
+    public delegate double MacroTaskLinkage(IReadOnlyCollection<Task> a, IReadOnlyCollection<Task> b);
 
     public int MinimumClusters { get; init; } = 1;
     public TimeSpan MaxDueDateDifference { get; init; } = TimeSpan.MaxValue;
     public TimeSpan MaxDurationSum { get; init; } = TimeSpan.MaxValue;
     public MacroTaskLinkage Linkage { get; init; } = DefaultLinkage;
-    public MacroTaskMerge Merge { get; init; } = DefaultMerge;
 }
 
 public class MacroTaskEstimator
 {
-    private readonly HierarchicalAgglomerativeClustering<Task, List<Task>, double> _clustering;
+    private readonly HierarchicalAgglomerativeClustering<Task, double> _clustering;
 
     public MacroTaskEstimator(MacroTaskEstimatorConfig config)
     {
-        _clustering = new HierarchicalAgglomerativeClustering<Task, List<Task>, double>(
+        _clustering = new HierarchicalAgglomerativeClustering<Task, double>(
             macroTasks => macroTasks.Count > config.MinimumClusters,
-            (a, b) => CanMergeTasks(a, b) ? config.Linkage(a, b) : null,
-            (a, b) => config.Merge(a, b));
+            (a, b) => CanMergeTasks(a, b) ? config.Linkage(a, b) : null);
 
         bool CanMergeTasks(IReadOnlyCollection<Task> tasks1, IReadOnlyCollection<Task> tasks2)
         {
@@ -56,13 +50,13 @@ public class MacroTaskEstimator
         }
     }
 
-    public IEnumerable<List<Task>> EstimateMacroTasks(IEnumerable<Task> tasks)
+    public IEnumerable<IEnumerable<Task>> EstimateMacroTasks(IEnumerable<Task> tasks)
     {
         return tasks
             .SelectMany(task => task.ResourceTypes,
                 (task, rt) => (Task: task, ResourceType: rt))
             .GroupBy(p => p.ResourceType, p => p.Task)
             .AsParallel()
-            .SelectMany(taskGroup => _clustering.MergeClusters(taskGroup.Select(t => new List<Task> { t })));
+            .SelectMany(taskGroup => _clustering.MergeClusters(taskGroup));
     }
 }
