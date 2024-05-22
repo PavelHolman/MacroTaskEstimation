@@ -51,4 +51,27 @@ public class MacroTaskEstimatorTests
                 .Using<List<Task>>((expected, actual) =>
                     expected.Count == actual.Count && !expected.Except(actual).Any()));
     }
+
+    [TestCase(10000, 3000, 10, 1, 10)]
+    [TestCase(10, 3, 3, 3, 10)]
+    [TestCase(250000, 3000, 10, 1, 10)]
+    [TestCase(250000, 10000, 100, 10, 10)]
+    public void GeneratedDataTest(
+        int taskCount, int resourceTypeCount, int maxResourceCount, int maxResourceTypesOnTask, int maxTaskDuration)
+    {
+        var tasks = TaskGenerator.GenerateTasks(
+            taskCount, resourceTypeCount, maxResourceTypesOnTask, maxTaskDuration, seed: 42);
+
+        var config = new MacroTaskEstimatorConfig
+        {
+            MaxDurationSum = TimeSpan.FromHours(maxTaskDuration)
+        };
+        var estimator = new MacroTaskEstimator(config);
+
+        var start = DateTime.Now;
+        _ = estimator.EstimateMacroTasks(tasks).ToList();
+        Console.WriteLine(DateTime.Now - start);
+
+        Assert.Pass();
+    }
 }
